@@ -119,12 +119,29 @@ audio {
   opacity: 0.4;
 }
 
-/* Ligne active mise en valeur */
+/* Ligne active mise en valeur (utilisé tel quel en mode Réglage) */
 .line.active {
   color: var(--accent);
   opacity: 1;
   transform: scale(1.06);
   text-shadow: 0 0 24px var(--accent-soft);
+}
+
+/* Mode Karaoké : la ligne active se remplit de gauche à droite.
+   --fill (0% → 100%) est piloté en JS. Le dégradé colore les lettres
+   jusqu'à --fill, le reste reste gris ; background-clip:text peint
+   ce dégradé À TRAVERS le texte. */
+body.mode-play .line.active {
+  background-image: linear-gradient(
+    to right,
+    var(--accent) var(--fill, 0%),
+    var(--text-dim) var(--fill, 0%)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  text-shadow: none;
 }
 
 /* Marqueur visuel en mode réglage : ligne déjà minutée */

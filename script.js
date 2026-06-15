@@ -19,7 +19,7 @@ const LYRICS = [
   "Quand on dit n'oublie pas, c'est pourtant ce que vous faites – simple",
   "Si elle attend qu'il fasse à manger, elle va bouffer ses mains - basique",
   "Il dit qu'il a raison même quand toutes les preuves disent le contraire – simple",
-  "Quand il dit \"tkt je gère\", généralement c'est dans 6 mois - basique",
+  'Quand il dit "tkt je gère", généralement c\'est dans 6 mois - basique',
   "",
   "Basique, simple, simple, basique",
   "Basique, simple, simple, basique",
@@ -32,23 +32,24 @@ const LYRICS = [
   "Même quand c'est elle qui a tort, c'est quand même elle qui a raison - basique",
   "Si elle te demande comment tu la trouves, surtout ne réfléchis pas - simple",
   "Maintenant quand ils font du kayak c'est surtout sans lunettes - basique",
-  "Si elle hésite entre deux coussins, dis rouge, elle prendra le bleu - simple",
   "Son armoire déborde de vêtements, mais elle dit qu'elle n'a rien à mettre - basique",
+  "Tous les témoins font des discours émouvants - cliché,",
   "",
-  "Tous les témoins font des discours émouvants",
+  "Basique, simple, simple, basique",
+  "Basique, simple, simple, basique",
+  "Basique, simple, simple, basique",
+  "Basique, simple, simple, basique",
   "",
-  "Basique, simple, simple, basique",
-  "Basique, simple, simple, basique",
-  "Basique, simple, simple, basique",
-  "Basique, simple, simple, basique",
   "Vous n'avez pas les bases",
   "Vous n'avez pas les bases",
   "Vous n'avez pas les bases",
   "Vous n'avez pas les bases",
+  "",
   "Basique, simple, vous n'avez pas les bases",
   "Basique, simple, vous n'avez pas les bases",
   "Basique, simple, vous n'avez pas les bases",
   "Basique, simple, vous n'avez pas les bases",
+  "",
   "Basique, simple, simple, basique",
   "Basique, simple, simple, basique",
   "Basique, simple, simple, basique",
@@ -130,28 +131,68 @@ function saveTimings() {
 }
 
 /* =========================================================================
-   MODE KARAOKÉ : surlignage et défilement automatique
+   MODE KARAOKÉ : surlignage progressif et défilement automatique
    ========================================================================= */
-function updateActiveLine() {
-  // Cherche la dernière ligne dont le temps est déjà passé.
+let rafId = null; // identifiant de la boucle d'animation
+
+/* Indice de la dernière ligne dont le temps est déjà passé. */
+function findCurrentIndex() {
   let current = -1;
   for (let i = 0; i < timings.length; i++) {
-    if (timings[i] != null && audio.currentTime >= timings[i]) {
-      current = i;
+    if (timings[i] != null && audio.currentTime >= timings[i]) current = i;
+  }
+  return current;
+}
+
+/* Temps de fin d'une ligne = début de la ligne suivante minutée.
+   Pour la dernière ligne, on retombe sur la fin de l'audio. */
+function lineEndTime(index) {
+  for (let i = index + 1; i < timings.length; i++) {
+    if (timings[i] != null) return timings[i];
+  }
+  return audio.duration || timings[index] + 4;
+}
+
+/* Met à jour la ligne active, son défilement et son remplissage. */
+function renderPlayback() {
+  const current = findCurrentIndex();
+
+  // Changement de ligne : on bascule les classes et on recentre l'écran.
+  if (current !== activeIndex) {
+    activeIndex = current;
+    lineEls.forEach((el, i) => {
+      el.classList.toggle("active", i === current);
+      el.classList.toggle("done", current >= 0 && i < current);
+      if (i !== current) el.style.removeProperty("--fill");
+    });
+    if (current >= 0) {
+      lineEls[current].scrollIntoView({ behavior: "smooth", block: "center" });
     }
   }
 
-  if (current === activeIndex) return;
-  activeIndex = current;
-
-  lineEls.forEach((el, i) => {
-    el.classList.toggle("active", i === current);
-    el.classList.toggle("done", current >= 0 && i < current);
-  });
-
+  // Remplissage progressif (0% → 100%) de la ligne active.
   if (current >= 0) {
-    lineEls[current].scrollIntoView({ behavior: "smooth", block: "center" });
+    const start = timings[current];
+    const end = lineEndTime(current);
+    const ratio = end > start ? (audio.currentTime - start) / (end - start) : 1;
+    const fill = Math.max(0, Math.min(1, ratio)) * 100;
+    lineEls[current].style.setProperty("--fill", fill.toFixed(2) + "%");
   }
+}
+
+/* Boucle d'animation : ~60 images/sec pour un balayage fluide. */
+function startLoop() {
+  cancelAnimationFrame(rafId);
+  const step = () => {
+    renderPlayback();
+    rafId = requestAnimationFrame(step);
+  };
+  step();
+}
+
+function stopLoop() {
+  cancelAnimationFrame(rafId);
+  rafId = null;
 }
 
 /* =========================================================================
@@ -208,11 +249,63 @@ function exportLrc() {
     li++;
   });
 
-  const blob = new Blob([lrc], { type: "text/plain" });
+  downloadFile(lrc, "paroles.lrc", "text/plain");
+}
+
+/* Télécharge le minutage en .json (sauvegarde fidèle et réimportable).
+   On inclut les paroles pour pouvoir vérifier la cohérence à l'import. */
+function downloadTimings() {
+  const data = {
+    song: currentName,
+    lyrics: LYRICS,
+    timings: timings,
+  };
+  const name = currentName.replace(/\.[^.]+$/, "") + "-minutage.json";
+  downloadFile(JSON.stringify(data, null, 2), name, "application/json");
+}
+
+/* Recharge un minutage depuis un fichier .json précédemment téléchargé. */
+function importTimings(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    let parsed;
+    try {
+      parsed = JSON.parse(reader.result);
+    } catch {
+      hintEl.textContent = "❌ Fichier illisible : ce n'est pas un .json valide.";
+      return;
+    }
+
+    // Accepte soit { timings: [...] }, soit directement un tableau.
+    const incoming = Array.isArray(parsed) ? parsed : parsed.timings;
+    if (!Array.isArray(incoming)) {
+      hintEl.textContent = "❌ Aucun minutage trouvé dans ce fichier.";
+      return;
+    }
+
+    if (incoming.length !== lineEls.length) {
+      hintEl.textContent =
+        `⚠️ Le fichier contient ${incoming.length} temps pour ${lineEls.length} lignes : ` +
+        "les paroles ont peut-être changé. Vérifie le résultat.";
+    } else {
+      hintEl.textContent = "✅ Minutage importé et sauvegardé.";
+    }
+
+    // Aligne sur le nombre de lignes courant, puis sauvegarde.
+    timings = lineEls.map((_, i) => (incoming[i] != null ? incoming[i] : null));
+    saveTimings();
+    setMode(mode); // rafraîchit l'affichage avec le nouveau minutage
+  };
+  reader.readAsText(file);
+}
+
+/* Petit utilitaire : déclenche le téléchargement d'un texte. */
+function downloadFile(content, filename, type) {
+  const blob = new Blob([content], { type });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "paroles.lrc";
+  a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -238,13 +331,24 @@ function setMode(next) {
   document.getElementById("mode-sync").classList.toggle("active", next === "sync");
   syncTools.classList.toggle("hidden", next === "play");
 
-  lineEls.forEach((el) => el.classList.remove("active", "done"));
+  // La classe sur <body> active (ou non) l'effet de remplissage en CSS.
+  document.body.classList.toggle("mode-play", next === "play");
+  document.body.classList.toggle("mode-sync", next === "sync");
+
+  lineEls.forEach((el) => {
+    el.classList.remove("active", "done");
+    el.style.removeProperty("--fill");
+  });
   activeIndex = -1;
+  stopLoop();
 
   if (next === "sync") {
     // Reprend au premier temps non encore défini.
     syncIndex = timings.findIndex((t) => t == null);
     if (syncIndex === -1) syncIndex = 0;
+  } else if (!audio.paused) {
+    // Si la musique joue déjà, on relance l'animation.
+    startLoop();
   }
   updateHint();
 }
@@ -267,8 +371,19 @@ function updateHint() {
 /* =========================================================================
    ÉVÉNEMENTS
    ========================================================================= */
+// Pendant la lecture : boucle d'animation fluide.
+audio.addEventListener("play", () => {
+  if (mode === "play") startLoop();
+});
+audio.addEventListener("pause", stopLoop);
+audio.addEventListener("ended", stopLoop);
+
+// En pause ou après un déplacement, on rafraîchit une fois l'affichage.
 audio.addEventListener("timeupdate", () => {
-  if (mode === "play") updateActiveLine();
+  if (mode === "play" && audio.paused) renderPlayback();
+});
+audio.addEventListener("seeked", () => {
+  if (mode === "play") renderPlayback();
 });
 
 document.getElementById("mode-play").addEventListener("click", () => setMode("play"));
@@ -278,16 +393,34 @@ document.getElementById("btn-tap").addEventListener("click", markLine);
 document.getElementById("btn-undo").addEventListener("click", undoLine);
 document.getElementById("btn-save").addEventListener("click", () => {
   saveTimings();
-  hintEl.textContent = "✅ Minutage sauvegardé. Repasse en mode « Karaoké » pour l'utiliser.";
+  hintEl.textContent =
+    "✅ Minutage sauvegardé. Repasse en mode « Karaoké » pour l'utiliser.";
 });
 document.getElementById("btn-export").addEventListener("click", exportLrc);
+document.getElementById("btn-download").addEventListener("click", downloadTimings);
+document.getElementById("import-file").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (file) importTimings(file);
+  e.target.value = ""; // permet de réimporter le même fichier ensuite
+});
 document.getElementById("btn-reset").addEventListener("click", () => {
   if (confirm("Effacer tout le minutage de cette chanson ?")) resetTimings();
 });
 
-// Raccourci clavier : Espace = marquer une ligne (en mode réglage).
+// Raccourcis clavier :
+//   Q       = lecture / pause (dans tous les modes)
+//   M / Espace = marquer une ligne (en mode réglage)
 document.addEventListener("keydown", (e) => {
-  if (e.code === "Space" && mode === "sync") {
+  const key = e.key.toLowerCase();
+
+  if (key === "q") {
+    e.preventDefault();
+    if (audio.paused) audio.play();
+    else audio.pause();
+    return;
+  }
+
+  if ((key === "m" || e.code === "Space") && mode === "sync") {
     e.preventDefault(); // empêche le scroll de la page
     markLine();
   }
