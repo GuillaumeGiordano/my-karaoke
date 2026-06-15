@@ -2,58 +2,68 @@
 
 /* =========================================================================
    PAROLES
-   Remplace ce tableau par tes propres paroles : une chaîne = une ligne.
-   Une ligne vide ("") crée un espace entre les couplets.
+   Chaque ligne est un objet : { text, curve }.
+     - text  : le texte affiché ("" = espace entre couplets, non minutable)
+     - curve : la façon dont la couleur remplit la ligne pendant le chant.
+
+   Courbes possibles :
+     "linear"    → vitesse constante
+     "easeIn"    → lent au début, rapide à la fin
+     "easeOut"   → rapide au début, lent à la fin
+     "easeInOut" → lent au début ET à la fin, rapide au milieu
+     "steps"     → saccadé (avance par à-coups)
+
+   Toutes les lignes sont en "linear" : modifie seulement celles que tu veux.
    ========================================================================= */
 const LYRICS = [
-  "Ok, j'ai décidé de m'inspirer d'une chanson simple",
-  "Parce que j'vais dire des trucs simples",
-  "Parce que vous êtes trop cons",
-  "Okay, simple, basique",
-  "Basique, okay",
-  "",
-  "Tout partager en couple c'est beau sauf quand c'est la couette - simple",
-  "Romain voulait que Laurie pète devant lui, maintenant il regrette - basique",
-  "Il repère un sniper à 300 mètres sur Call of mais pas la vaisselle - simple",
-  "S'il y a des cheveux dans la douche, ça ne vient pas de Romain – basique",
-  "Quand on dit n'oublie pas, c'est pourtant ce que vous faites – simple",
-  "Si elle attend qu'il fasse à manger, elle va bouffer ses mains - basique",
-  "Il dit qu'il a raison même quand toutes les preuves disent le contraire – simple",
-  'Quand il dit "tkt je gère", généralement c\'est dans 6 mois - basique',
-  "",
-  "Basique, simple, simple, basique",
-  "Basique, simple, simple, basique",
-  "Vous n'avez pas les bases, vous n'avez pas les bases",
-  "Vous n'avez pas les bases, vous n'avez pas les bases",
-  "",
-  "Avant c'était boîte et vodka, maintenant c'est notice Ikea – simple",
-  "Quand elle te dit fais comme tu veux, surtout ne le fais pas - basique",
-  "Pendant une semaine par mois, crois-moi, tais-toi, ça vaut mieux - simple",
-  "Même quand c'est elle qui a tort, c'est quand même elle qui a raison - basique",
-  "Si elle te demande comment tu la trouves, surtout ne réfléchis pas - simple",
-  "Maintenant quand ils font du kayak c'est surtout sans lunettes - basique",
-  "Son armoire déborde de vêtements, mais elle dit qu'elle n'a rien à mettre - basique",
-  "Tous les témoins font des discours émouvants - cliché,",
-  "",
-  "Basique, simple, simple, basique",
-  "Basique, simple, simple, basique",
-  "Basique, simple, simple, basique",
-  "Basique, simple, simple, basique",
-  "",
-  "Vous n'avez pas les bases",
-  "Vous n'avez pas les bases",
-  "Vous n'avez pas les bases",
-  "Vous n'avez pas les bases",
-  "",
-  "Basique, simple, vous n'avez pas les bases",
-  "Basique, simple, vous n'avez pas les bases",
-  "Basique, simple, vous n'avez pas les bases",
-  "Basique, simple, vous n'avez pas les bases",
-  "",
-  "Basique, simple, simple, basique",
-  "Basique, simple, simple, basique",
-  "Basique, simple, simple, basique",
-  "Basique, simple, simple, vous n'avez pas les bases",
+  { text: "Ok, j'ai décidé de m'inspirer d'une chanson simple", curve: "linear" },
+  { text: "Parce que j'vais dire des trucs simples", curve: "linear" },
+  { text: "Parce que vous êtes trop cons", curve: "linear" },
+  { text: "Okay, simple, basique", curve: "linear" },
+  { text: "Basique, okay", curve: "linear" },
+  { text: "", curve: "linear" },
+  { text: "Tout partager en couple c'est beau sauf quand c'est la couette - simple", curve: "linear" },
+  { text: "Romain voulait que Laurie pète devant lui, maintenant il regrette - basique", curve: "linear" },
+  { text: "Il repère un sniper à 300 mètres sur Call of mais pas la vaisselle - simple", curve: "linear" },
+  { text: "S'il y a des cheveux dans la douche, ça ne vient pas de Romain – basique", curve: "linear" },
+  { text: "Quand on dit n'oublie pas, c'est pourtant ce que vous faites – simple", curve: "linear" },
+  { text: "Si elle attend qu'il fasse à manger, elle va bouffer ses mains - basique", curve: "linear" },
+  { text: "Il dit qu'il a raison même quand toutes les preuves disent le contraire – simple", curve: "linear" },
+  { text: 'Quand il dit "tkt je gère", généralement c\'est dans 6 mois - basique', curve: "linear" },
+  { text: "", curve: "linear" },
+  { text: "Basique, simple, simple, basique", curve: "linear" },
+  { text: "Basique, simple, simple, basique", curve: "linear" },
+  { text: "Vous n'avez pas les bases, vous n'avez pas les bases", curve: "linear" },
+  { text: "Vous n'avez pas les bases, vous n'avez pas les bases", curve: "linear" },
+  { text: "", curve: "linear" },
+  { text: "Avant c'était boîte et vodka, maintenant c'est notice Ikea – simple", curve: "linear" },
+  { text: "Quand elle te dit fais comme tu veux, surtout ne le fais pas - basique", curve: "linear" },
+  { text: "Pendant une semaine par mois, crois-moi, tais-toi, ça vaut mieux - simple", curve: "linear" },
+  { text: "Même quand c'est elle qui a tort, c'est quand même elle qui a raison - basique", curve: "linear" },
+  { text: "Si elle te demande comment tu la trouves, surtout ne réfléchis pas - simple", curve: "linear" },
+  { text: "Maintenant quand ils font du kayak c'est surtout sans lunettes - basique", curve: "linear" },
+  { text: "Son armoire déborde de vêtements, mais elle dit qu'elle n'a rien à mettre - basique", curve: "linear" },
+  { text: "Tous les témoins font des discours émouvants - cliché,", curve: "linear" },
+  { text: "", curve: "linear" },
+  { text: "Basique, simple, simple, basique", curve: "linear" },
+  { text: "Basique, simple, simple, basique", curve: "linear" },
+  { text: "Basique, simple, simple, basique", curve: "linear" },
+  { text: "Basique, simple, simple, basique", curve: "linear" },
+  { text: "", curve: "linear" },
+  { text: "Vous n'avez pas les bases", curve: "linear" },
+  { text: "Vous n'avez pas les bases", curve: "linear" },
+  { text: "Vous n'avez pas les bases", curve: "linear" },
+  { text: "Vous n'avez pas les bases", curve: "linear" },
+  { text: "", curve: "linear" },
+  { text: "Basique, simple, vous n'avez pas les bases", curve: "linear" },
+  { text: "Basique, simple, vous n'avez pas les bases", curve: "linear" },
+  { text: "Basique, simple, vous n'avez pas les bases", curve: "linear" },
+  { text: "Basique, simple, vous n'avez pas les bases", curve: "linear" },
+  { text: "", curve: "linear" },
+  { text: "Basique, simple, simple, basique", curve: "linear" },
+  { text: "Basique, simple, simple, basique", curve: "linear" },
+  { text: "Basique, simple, simple, basique", curve: "linear" },
+  { text: "Basique, simple, simple, vous n'avez pas les bases", curve: "linear" },
 ];
 
 /* =========================================================================
@@ -66,6 +76,7 @@ const syncTools = document.getElementById("sync-tools");
 
 let mode = "play"; // "play" | "sync"
 let lineEls = []; // éléments <p> de chaque ligne (paroles non vides incluses)
+let lineCurves = []; // courbe d'animation de chaque ligne (aligné sur lineEls)
 let timings = []; // timings[i] = temps en secondes de la ligne i, ou null
 let syncIndex = 0; // prochaine ligne à minuter en mode réglage
 let activeIndex = -1; // ligne actuellement surlignée en mode karaoké
@@ -85,12 +96,13 @@ function storageKey() {
 function render() {
   lyricsEl.innerHTML = "";
   lineEls = [];
+  lineCurves = [];
 
-  LYRICS.forEach((text) => {
+  LYRICS.forEach((line) => {
     const p = document.createElement("p");
     p.className = "line";
 
-    if (text.trim() === "") {
+    if (line.text.trim() === "") {
       // Ligne vide = simple espacement, non minutable.
       p.innerHTML = "&nbsp;";
       p.style.cursor = "default";
@@ -99,7 +111,7 @@ function render() {
     }
 
     const index = lineEls.length;
-    p.textContent = text;
+    p.textContent = line.text;
     p.dataset.index = String(index);
 
     // Clic sur une ligne = sauter à son temps (karaoké) ou la sélectionner (réglage).
@@ -107,7 +119,29 @@ function render() {
 
     lyricsEl.appendChild(p);
     lineEls.push(p);
+    // Récupère la courbe définie pour cette ligne (sinon "linear").
+    lineCurves.push(line.curve || "linear");
   });
+}
+
+/* Applique une courbe d'interpolation à une progression p (0 → 1).
+   Renvoie la fraction de remplissage (toujours entre 0 et 1). */
+function applyEasing(p, curve) {
+  switch (curve) {
+    case "easeIn":
+      return p * p; // lent au début
+    case "easeOut":
+      return 1 - (1 - p) * (1 - p); // lent à la fin
+    case "easeInOut":
+      return p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+    case "steps": {
+      const n = 8; // nombre de paliers (plus grand = moins saccadé)
+      return Math.floor(p * n) / n;
+    }
+    case "linear":
+    default:
+      return p;
+  }
 }
 
 /* =========================================================================
@@ -170,12 +204,14 @@ function renderPlayback() {
     }
   }
 
-  // Remplissage progressif (0% → 100%) de la ligne active.
+  // Remplissage progressif (0% → 100%) de la ligne active,
+  // déformé par la courbe d'animation choisie pour cette ligne.
   if (current >= 0) {
     const start = timings[current];
     const end = lineEndTime(current);
     const ratio = end > start ? (audio.currentTime - start) / (end - start) : 1;
-    const fill = Math.max(0, Math.min(1, ratio)) * 100;
+    const p = Math.max(0, Math.min(1, ratio));
+    const fill = applyEasing(p, lineCurves[current]) * 100;
     lineEls[current].style.setProperty("--fill", fill.toFixed(2) + "%");
   }
 }
@@ -233,8 +269,8 @@ function resetTimings() {
 function exportLrc() {
   let lrc = "";
   let li = 0;
-  LYRICS.forEach((text) => {
-    if (text.trim() === "") {
+  LYRICS.forEach((line) => {
+    if (line.text.trim() === "") {
       lrc += "\n";
       return;
     }
@@ -242,9 +278,9 @@ function exportLrc() {
     if (t != null) {
       const m = String(Math.floor(t / 60)).padStart(2, "0");
       const s = (t % 60).toFixed(2).padStart(5, "0");
-      lrc += `[${m}:${s}]${text}\n`;
+      lrc += `[${m}:${s}]${line.text}\n`;
     } else {
-      lrc += text + "\n";
+      lrc += line.text + "\n";
     }
     li++;
   });

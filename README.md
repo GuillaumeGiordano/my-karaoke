@@ -41,20 +41,20 @@ C'est ici qu'on indique au programme **à quel moment commence chaque ligne**. C
 
 ## Changer les paroles
 
-Ouvrez **`script.js`** et modifiez le tableau **`LYRICS`** tout en haut :
+Ouvrez **`script.js`** et modifiez le tableau **`LYRICS`** tout en haut. Chaque ligne est un objet `{ text, curve }` :
 
 ```js
 const LYRICS = [
-  "Première ligne de la chanson",
-  "Deuxième ligne",
-  "",                       // une chaîne vide = espace entre deux couplets
-  "Début du refrain",
+  { text: "Première ligne de la chanson", curve: "linear" },
+  { text: "Deuxième ligne", curve: "linear" },
+  { text: "", curve: "linear" },              // text vide = espace entre deux couplets
+  { text: "Début du refrain", curve: "linear" },
 ];
 ```
 
-- Une chaîne `"..."` = une ligne affichée.
-- Une chaîne vide `""` = un espacement (couplet/refrain), elle n'est pas minutable.
-- Si une ligne contient une apostrophe, entourez-la de guillemets doubles : `"c'est"`.
+- `text` = le texte affiché ; `text: ""` = un espacement (non minutable).
+- `curve` = l'animation de remplissage (voir section suivante ; laissez `"linear"` si vous ne savez pas).
+- Si le texte contient une apostrophe, entourez-le de guillemets doubles : `"c'est"`.
 
 > ⚠️ Si vous modifiez les paroles après avoir fait le réglage, le minutage peut se décaler : refaites un passage en mode Réglage.
 
@@ -74,6 +74,27 @@ Par défaut, le minutage est gardé dans le navigateur (`localStorage`), **par c
 | **⬇️ Exporter (.lrc)** | Exporte au format standard `.lrc` (paroles synchronisées), pour réutiliser ailleurs. ⚠️ Ce format n'est **pas** réimportable ici. |
 
 > Si vous importez un minutage alors que les paroles ont changé (nombre de lignes différent), un message d'avertissement s'affiche et vous demande de vérifier le résultat.
+
+## Animation de remplissage par ligne (optionnel)
+
+Par défaut, la couleur remplit chaque ligne à **vitesse constante**. Vous pouvez donner à chaque ligne une « courbe » différente, directement dans son objet via le champ **`curve`** :
+
+| Valeur | Effet |
+|--------|-------|
+| `"linear"` | Vitesse constante (défaut) |
+| `"easeIn"` | Lent au début, rapide à la fin |
+| `"easeOut"` | Rapide au début, lent à la fin |
+| `"easeInOut"` | Lent au début et à la fin, rapide au milieu |
+| `"steps"` | Saccadé (avance par à-coups) |
+
+Il suffit de changer la valeur de `curve` sur la ligne voulue :
+
+```js
+{ text: "Romain voulait que Laurie pète devant lui...", curve: "easeOut" },
+{ text: "Il repère un sniper à 300 mètres...", curve: "steps" },
+```
+
+> Note : cette animation est purement visuelle ; elle déforme la vitesse de la couleur sans changer le minutage. Pour un effet « collé à la voix », gardez `"linear"`.
 
 ## Bon à savoir
 
