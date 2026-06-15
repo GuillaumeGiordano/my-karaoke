@@ -16,33 +16,78 @@
    Toutes les lignes sont en "linear" : modifie seulement celles que tu veux.
    ========================================================================= */
 const LYRICS = [
-  { text: "Ok, j'ai décidé de m'inspirer d'une chanson simple", curve: "linear" },
-  { text: "Parce que j'vais dire des trucs simples", curve: "linear" },
-  { text: "Parce que vous êtes trop cons", curve: "linear" },
-  { text: "Okay, simple, basique", curve: "linear" },
+  { text: "Ok, j'ai décidé de m'inspirer d'une chanson simple", curve: "easeInOut" },
+  { text: "Parce que j'vais dire des trucs simples", curve: "easeIn" },
+  { text: "Parce que vous êtes trop cons", curve: "easeInOut" },
+  { text: "Okay, simple, basique", curve: "steps" },
   { text: "Basique, okay", curve: "linear" },
   { text: "", curve: "linear" },
-  { text: "Tout partager en couple c'est beau sauf quand c'est la couette - simple", curve: "linear" },
-  { text: "Romain voulait que Laurie pète devant lui, maintenant il regrette - basique", curve: "linear" },
-  { text: "Il repère un sniper à 300 mètres sur Call of mais pas la vaisselle - simple", curve: "linear" },
-  { text: "S'il y a des cheveux dans la douche, ça ne vient pas de Romain – basique", curve: "linear" },
-  { text: "Quand on dit n'oublie pas, c'est pourtant ce que vous faites – simple", curve: "linear" },
-  { text: "Si elle attend qu'il fasse à manger, elle va bouffer ses mains - basique", curve: "linear" },
-  { text: "Il dit qu'il a raison même quand toutes les preuves disent le contraire – simple", curve: "linear" },
-  { text: 'Quand il dit "tkt je gère", généralement c\'est dans 6 mois - basique', curve: "linear" },
+  {
+    text: "Tout partager en couple c'est beau sauf quand c'est la couette - simple",
+    curve: "linear",
+  },
+  {
+    text: "Romain voulait que Laurie pète devant lui, maintenant il regrette - basique",
+    curve: "linear",
+  },
+  {
+    text: "Il repère un sniper à 300 mètres sur Call of mais pas la vaisselle - simple",
+    curve: "linear",
+  },
+  {
+    text: "S'il y a des cheveux dans la douche, ça ne vient pas de Romain – basique",
+    curve: "linear",
+  },
+  {
+    text: "Quand on dit n'oublie pas, c'est pourtant ce que vous faites – simple",
+    curve: "linear",
+  },
+  {
+    text: "Si elle attend qu'il fasse à manger, elle va bouffer ses mains - basique",
+    curve: "linear",
+  },
+  {
+    text: "Il dit qu'il a raison même quand toutes les preuves disent le contraire – simple",
+    curve: "linear",
+  },
+  {
+    text: 'Quand il dit "tkt je gère", généralement c\'est dans 6 mois - basique',
+    curve: "linear",
+  },
   { text: "", curve: "linear" },
   { text: "Basique, simple, simple, basique", curve: "linear" },
   { text: "Basique, simple, simple, basique", curve: "linear" },
   { text: "Vous n'avez pas les bases, vous n'avez pas les bases", curve: "linear" },
   { text: "Vous n'avez pas les bases, vous n'avez pas les bases", curve: "linear" },
   { text: "", curve: "linear" },
-  { text: "Avant c'était boîte et vodka, maintenant c'est notice Ikea – simple", curve: "linear" },
-  { text: "Quand elle te dit fais comme tu veux, surtout ne le fais pas - basique", curve: "linear" },
-  { text: "Pendant une semaine par mois, crois-moi, tais-toi, ça vaut mieux - simple", curve: "linear" },
-  { text: "Même quand c'est elle qui a tort, c'est quand même elle qui a raison - basique", curve: "linear" },
-  { text: "Si elle te demande comment tu la trouves, surtout ne réfléchis pas - simple", curve: "linear" },
-  { text: "Maintenant quand ils font du kayak c'est surtout sans lunettes - basique", curve: "linear" },
-  { text: "Son armoire déborde de vêtements, mais elle dit qu'elle n'a rien à mettre - basique", curve: "linear" },
+  {
+    text: "Avant c'était boîte et vodka, maintenant c'est notice Ikea – simple",
+    curve: "linear",
+  },
+  {
+    text: "Quand elle te dit fais comme tu veux, surtout ne le fais pas - basique",
+    curve: "linear",
+  },
+  {
+    text: "Pendant une semaine par mois, crois-moi, tais-toi, ça vaut mieux - simple",
+    curve: "linear",
+  },
+  {
+    text: "Même quand c'est elle qui a tort, c'est quand même elle qui a raison - basique",
+    curve: "linear",
+  },
+  {
+    text: "Si elle te demande comment tu la trouves, surtout ne réfléchis pas - simple",
+    curve: "linear",
+  },
+  {
+    text: "Maintenant quand ils font du kayak c'est surtout sans lunettes - basique",
+    curve: "linear",
+  },
+  {
+    text: "Son armoire déborde de vêtements, mais elle dit qu'elle n'a rien à mettre - basique",
+    curve: "linear",
+  },
   { text: "Tous les témoins font des discours émouvants - cliché,", curve: "linear" },
   { text: "", curve: "linear" },
   { text: "Basique, simple, simple, basique", curve: "linear" },
