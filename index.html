@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prompteur Karaoké</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="toolbar">
+    <h1 class="title">🎤 Prompteur</h1>
+
+    <div class="modes">
+      <button id="mode-play" class="mode-btn active" type="button">Karaoké</button>
+      <button id="mode-sync" class="mode-btn" type="button">Réglage</button>
+    </div>
+
+    <label class="file-pick">
+      Charger un audio
+      <input id="audio-file" type="file" accept="audio/*" hidden />
+    </label>
+  </header>
+
+  <!-- Lecteur audio (les contrôles natifs servent à play/pause/seek) -->
+  <audio id="audio" src="videoplayback.m4a" controls preload="metadata"></audio>
+
+  <!-- Barre d'aide contextuelle selon le mode -->
+  <p id="hint" class="hint"></p>
+
+  <!-- Zone d'affichage des paroles -->
+  <main id="lyrics" class="lyrics" tabindex="0"></main>
+
+  <!-- Outils du mode Réglage -->
+  <footer id="sync-tools" class="sync-tools hidden">
+    <button id="btn-tap" class="sync-btn" type="button">⏱️ Marquer la ligne (Espace)</button>
+    <button id="btn-undo" class="sync-btn" type="button">↩️ Annuler la dernière</button>
+    <button id="btn-save" class="sync-btn primary" type="button">💾 Sauvegarder le minutage</button>
+    <button id="btn-export" class="sync-btn" type="button">⬇️ Exporter (.lrc)</button>
+    <button id="btn-reset" class="sync-btn danger" type="button">🗑️ Effacer</button>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
