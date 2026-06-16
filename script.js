@@ -17,7 +17,7 @@
    ========================================================================= */
 const LYRICS = [
   { text: "Ok, on a décidé de s'inspirer d'une chanson simple", curve: "linear" },
-  { text: "Parce que j'vais dire des trucs simples", curve: "linear" },
+  { text: "Parce qu'on va dire des trucs simples", curve: "linear" },
   { text: "Parce que vous êtes trop cons", curve: "linear" },
   { text: "Okay, simple, basique", curve: "linear" },
   { text: "Basique, okay", curve: "linear" },
