@@ -16,10 +16,10 @@
    Toutes les lignes sont en "linear" : modifie seulement celles que tu veux.
    ========================================================================= */
 const LYRICS = [
-  { text: "Ok, j'ai décidé de m'inspirer d'une chanson simple", curve: "easeInOut" },
-  { text: "Parce que j'vais dire des trucs simples", curve: "easeIn" },
-  { text: "Parce que vous êtes trop cons", curve: "easeInOut" },
-  { text: "Okay, simple, basique", curve: "steps" },
+  { text: "Ok, j'ai décidé de m'inspirer d'une chanson simple", curve: "linear" },
+  { text: "Parce que j'vais dire des trucs simples", curve: "linear" },
+  { text: "Parce que vous êtes trop cons", curve: "linear" },
+  { text: "Okay, simple, basique", curve: "linear" },
   { text: "Basique, okay", curve: "linear" },
   { text: "", curve: "linear" },
   {
