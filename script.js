@@ -9,9 +9,9 @@
      - time  : moment (en secondes) où la ligne commence ; null = non défini
 
    Rien n'est embarqué dans le projet : au lancement, l'app est vide.
-   1) On IMPORTE un fichier song.js (paroles + courbes + temps).
+   1) On IMPORTE un fichier song.json (paroles + courbes + temps).
    2) On cale les temps en mode Réglage (auto-sauvegardé dans le navigateur).
-   3) On EXPORTE le song.js mis à jour : c'est la seule sauvegarde durable.
+   3) On EXPORTE le song.json mis à jour : c'est la seule sauvegarde durable.
 
    Le navigateur garde un brouillon auto pour reprendre après un reload ;
    il est écrasé dès qu'on importe un nouveau fichier (le fichier fait foi).
@@ -51,7 +51,7 @@ function render() {
   if (SONG.length === 0) {
     const p = document.createElement("p");
     p.className = "line placeholder";
-    p.textContent = "Importe un fichier song.js pour afficher les paroles.";
+    p.textContent = "Importe un fichier song.json pour afficher les paroles.";
     p.style.cursor = "default";
     lyricsEl.appendChild(p);
     return;
@@ -282,52 +282,19 @@ function exportLrc() {
   downloadFile(lrc, "paroles.lrc", "text/plain");
 }
 
-/* En-tête du fichier song.js régénéré (identique à celui d'origine). */
-const SONG_FILE_HEADER = `/* =========================================================================
-   DONNÉES DE LA CHANSON
-   Chaque ligne est un objet : { text, curve, time }.
-     - text  : le texte affiché ("" = espace entre couplets, non minutable)
-     - curve : animation du remplissage de la couleur pendant le chant
-               ("linear", "easeIn", "easeOut", "easeInOut", "steps")
-     - time  : moment (en secondes) où la ligne commence ; null = non défini
-
-   Tu peux remplir les "time" à la main, OU les caler dans l'application
-   (mode Réglage) puis télécharger ce fichier mis à jour pour le remplacer.
-   ========================================================================= */
-`;
-
-/* Régénère le fichier song.js avec le minutage courant. C'est la seule
+/* Régénère le fichier song.json avec le minutage courant. C'est la seule
    sauvegarde durable : on garde ce fichier pour le réimporter plus tard. */
 function downloadSong() {
   if (SONG.length === 0) {
-    hintEl.textContent = "❌ Rien à exporter : importe d'abord un song.js.";
+    hintEl.textContent = "❌ Rien à exporter : importe d'abord un song.json.";
     return;
   }
-  // JSON.stringify gère l'échappement des guillemets/apostrophes du texte.
-  const lines = buildSong()
-    .map(
-      (line) =>
-        `  { text: ${JSON.stringify(line.text)}, curve: ${JSON.stringify(line.curve)}, time: ${line.time} },`
-    )
-    .join("\n");
-  const body = `const SONG = [\n${lines}\n];\n`;
-
-  downloadFile(SONG_FILE_HEADER + body, "song.js", "application/javascript");
+  downloadFile(JSON.stringify(buildSong(), null, 2), "song.json", "application/json");
   hasUnsavedWork = false; // le travail est désormais figé dans le fichier exporté
-  hintEl.textContent = "✅ song.js exporté.";
+  hintEl.textContent = "✅ song.json exporté.";
 }
 
-/* Extrait le tableau SONG du texte d'un fichier song.js.
-   On exécute le fichier dans une fonction isolée et on récupère SONG.
-   (Fichier choisi localement par l'utilisateur = même confiance que le projet.) */
-function parseSongFile(text) {
-  const factory = new Function(
-    text + "\n;return typeof SONG !== 'undefined' ? SONG : null;"
-  );
-  return factory();
-}
-
-/* Charge une chanson depuis un fichier song.js : paroles, courbes ET temps.
+/* Charge une chanson depuis un fichier song.json : paroles, courbes ET temps.
    Le fichier fait foi (il remplace tout). Garde-fou si un calage non exporté
    risquerait d'être écrasé. */
 function importSong(file) {
@@ -345,14 +312,15 @@ function importSong(file) {
   reader.onload = () => {
     let parsed;
     try {
-      parsed = parseSongFile(reader.result);
+      // JSON.parse ne lit que des données : aucun code n'est exécuté (sûr).
+      parsed = JSON.parse(reader.result);
     } catch {
-      hintEl.textContent = "❌ Fichier illisible : ce n'est pas un song.js valide.";
+      hintEl.textContent = "❌ Fichier illisible : ce n'est pas un song.json valide.";
       return;
     }
 
     if (!Array.isArray(parsed) || parsed.length === 0) {
-      hintEl.textContent = "❌ Aucun tableau SONG trouvé dans ce fichier.";
+      hintEl.textContent = "❌ Aucune chanson trouvée dans ce fichier.";
       return;
     }
 
@@ -366,7 +334,7 @@ function importSong(file) {
     setMode(mode);
 
     hintEl.textContent =
-      "✅ song.js importé. Passe en « Réglage » pour caler ou ajuster les temps.";
+      "✅ song.json importé. Passe en « Réglage » pour caler ou ajuster les temps.";
   };
   reader.readAsText(file);
 }
@@ -428,7 +396,7 @@ function setMode(next) {
 function updateHint() {
   if (lineEls.length === 0) {
     hintEl.textContent =
-      "Aucune chanson chargée. Clique « Importer song.js » (en haut) pour commencer.";
+      "Aucune chanson chargée. Clique « Importer song.json » (en haut) pour commencer.";
     return;
   }
   if (mode === "play") {
@@ -441,7 +409,7 @@ function updateHint() {
     hintEl.textContent =
       `Réglage — ligne ${Math.min(syncIndex + 1, lineEls.length)}/${lineEls.length}. ` +
       `Lance la musique et appuie sur Espace au début de chaque ligne (${remaining} restantes). ` +
-      `N'oublie pas d'exporter song.js à la fin.`;
+      `N'oublie pas d'exporter song.json à la fin.`;
   }
 }
 
