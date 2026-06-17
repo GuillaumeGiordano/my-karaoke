@@ -1,115 +1,21 @@
 "use strict";
 
 /* =========================================================================
-   PAROLES
-   Chaque ligne est un objet : { text, curve }.
+   MODÈLE DE DONNÉES
+   Une chanson est un tableau d'objets { text, curve, time } :
      - text  : le texte affiché ("" = espace entre couplets, non minutable)
-     - curve : la façon dont la couleur remplit la ligne pendant le chant.
+     - curve : la façon dont la couleur remplit la ligne pendant le chant
+               ("linear", "easeIn", "easeOut", "easeInOut", "steps")
+     - time  : moment (en secondes) où la ligne commence ; null = non défini
 
-   Courbes possibles :
-     "linear"    → vitesse constante
-     "easeIn"    → lent au début, rapide à la fin
-     "easeOut"   → rapide au début, lent à la fin
-     "easeInOut" → lent au début ET à la fin, rapide au milieu
-     "steps"     → saccadé (avance par à-coups)
+   Rien n'est embarqué dans le projet : au lancement, l'app est vide.
+   1) On IMPORTE un fichier song.js (paroles + courbes + temps).
+   2) On cale les temps en mode Réglage (auto-sauvegardé dans le navigateur).
+   3) On EXPORTE le song.js mis à jour : c'est la seule sauvegarde durable.
 
-   Toutes les lignes sont en "linear" : modifie seulement celles que tu veux.
+   Le navigateur garde un brouillon auto pour reprendre après un reload ;
+   il est écrasé dès qu'on importe un nouveau fichier (le fichier fait foi).
    ========================================================================= */
-const LYRICS = [
-  { text: "Ok, on a décidé de s'inspirer d'une chanson simple", curve: "linear" },
-  { text: "Parce qu'on va dire des trucs simples", curve: "linear" },
-  { text: "Parce que vous êtes trop cons", curve: "linear" },
-  { text: "Okay, simple, basique", curve: "linear" },
-  { text: "Basique, okay", curve: "linear" },
-  { text: "", curve: "linear" },
-  {
-    text: "Tout partager en couple c'est beau sauf quand c'est la couette - simple",
-    curve: "linear",
-  },
-  {
-    text: "Romain voulait que Laurie pète devant lui, maintenant il regrette - basique",
-    curve: "linear",
-  },
-  {
-    text: "Il repère un sniper à 300 mètres sur Call of mais pas la vaisselle - simple",
-    curve: "linear",
-  },
-  {
-    text: "S'il y a des cheveux dans la douche, ça ne vient pas de Romain – basique",
-    curve: "linear",
-  },
-  {
-    text: "Quand on dit n'oublie pas, c'est pourtant ce que vous faites – simple",
-    curve: "linear",
-  },
-  {
-    text: "Si elle attend qu'il fasse à manger, elle va bouffer ses mains - basique",
-    curve: "linear",
-  },
-  {
-    text: "Il dit qu'il a raison même quand toutes les preuves disent le contraire – simple",
-    curve: "linear",
-  },
-  {
-    text: 'Quand il dit "tkt je gère", généralement c\'est dans 6 mois - basique',
-    curve: "linear",
-  },
-  { text: "", curve: "linear" },
-  { text: "Basique, simple, simple, basique", curve: "linear" },
-  { text: "Basique, simple, simple, basique", curve: "linear" },
-  { text: "Vous n'avez pas les bases, vous n'avez pas les bases", curve: "linear" },
-  { text: "Vous n'avez pas les bases, vous n'avez pas les bases", curve: "linear" },
-  { text: "", curve: "linear" },
-  {
-    text: "Avant c'était boîte et vodka, maintenant c'est notice Ikea – simple",
-    curve: "linear",
-  },
-  {
-    text: "Quand elle te dit fais comme tu veux, surtout ne le fais pas - basique",
-    curve: "linear",
-  },
-  {
-    text: "Pendant une semaine par mois, crois-moi, tais-toi, ça vaut mieux - simple",
-    curve: "linear",
-  },
-  {
-    text: "Même quand c'est elle qui a tort, c'est quand même elle qui a raison - basique",
-    curve: "linear",
-  },
-  {
-    text: "Si elle te demande comment tu la trouves, surtout ne réfléchis pas - simple",
-    curve: "linear",
-  },
-  {
-    text: "Maintenant quand ils font du kayak c'est surtout sans lunettes - basique",
-    curve: "linear",
-  },
-  {
-    text: "Son armoire déborde de vêtements, mais elle dit qu'elle n'a rien à mettre - basique",
-    curve: "linear",
-  },
-  { text: "Tous les témoins font des discours émouvants - cliché,", curve: "linear" },
-  { text: "", curve: "linear" },
-  { text: "Basique, simple, simple, basique", curve: "linear" },
-  { text: "Basique, simple, simple, basique", curve: "linear" },
-  { text: "Basique, simple, simple, basique", curve: "linear" },
-  { text: "Basique, simple, simple, basique", curve: "linear" },
-  { text: "", curve: "linear" },
-  { text: "Vous n'avez pas les bases", curve: "linear" },
-  { text: "Vous n'avez pas les bases", curve: "linear" },
-  { text: "Vous n'avez pas les bases", curve: "linear" },
-  { text: "Vous n'avez pas les bases", curve: "linear" },
-  { text: "", curve: "linear" },
-  { text: "Basique, simple, vous n'avez pas les bases", curve: "linear" },
-  { text: "Basique, simple, vous n'avez pas les bases", curve: "linear" },
-  { text: "Basique, simple, vous n'avez pas les bases", curve: "linear" },
-  { text: "Basique, simple, vous n'avez pas les bases", curve: "linear" },
-  { text: "", curve: "linear" },
-  { text: "Basique, simple, simple, basique", curve: "linear" },
-  { text: "Basique, simple, simple, basique", curve: "linear" },
-  { text: "Basique, simple, simple, basique", curve: "linear" },
-  { text: "Basique, simple, simple, vous n'avez pas les bases", curve: "linear" },
-];
 
 /* =========================================================================
    ÉTAT GLOBAL
@@ -119,19 +25,18 @@ const lyricsEl = document.getElementById("lyrics");
 const hintEl = document.getElementById("hint");
 const syncTools = document.getElementById("sync-tools");
 
+let SONG = []; // paroles courantes ; rempli uniquement à l'import
 let mode = "play"; // "play" | "sync"
 let lineEls = []; // éléments <p> de chaque ligne (paroles non vides incluses)
 let lineCurves = []; // courbe d'animation de chaque ligne (aligné sur lineEls)
 let timings = []; // timings[i] = temps en secondes de la ligne i, ou null
 let syncIndex = 0; // prochaine ligne à minuter en mode réglage
 let activeIndex = -1; // ligne actuellement surlignée en mode karaoké
+let hasUnsavedWork = false; // un calage modifié n'a pas encore été exporté
 
-/* Nom logique de la chanson courante : sert de clé de stockage pour
-   garder un minutage différent par chanson. */
-let currentName = (audio.getAttribute("src") || "default").split("/").pop();
-
+/* Clé unique du brouillon de reprise dans le navigateur (localStorage). */
 function storageKey() {
-  return "karaoke-timings:" + currentName;
+  return "karaoke-draft";
 }
 
 /* =========================================================================
@@ -143,7 +48,16 @@ function render() {
   lineEls = [];
   lineCurves = [];
 
-  LYRICS.forEach((line) => {
+  if (SONG.length === 0) {
+    const p = document.createElement("p");
+    p.className = "line placeholder";
+    p.textContent = "Importe un fichier song.js pour afficher les paroles.";
+    p.style.cursor = "default";
+    lyricsEl.appendChild(p);
+    return;
+  }
+
+  SONG.forEach((line) => {
     const p = document.createElement("p");
     p.className = "line";
 
@@ -190,23 +104,49 @@ function applyEasing(p, curve) {
 }
 
 /* =========================================================================
-   PERSISTANCE DU MINUTAGE (localStorage)
+   DONNÉES COURANTES & BROUILLON DE REPRISE (localStorage)
    ========================================================================= */
-function loadTimings() {
-  const raw = localStorage.getItem(storageKey());
-  if (raw) {
-    try {
-      timings = JSON.parse(raw);
-    } catch {
-      timings = [];
+/* Construit le tableau de la chanson courante : paroles + courbes + temps
+   réinjectés depuis timings[]. Sert à l'export ET à l'auto-sauvegarde. */
+function buildSong() {
+  let li = 0; // index dans timings[] : avance seulement sur les lignes non vides
+  return SONG.map((line) => {
+    let time = null;
+    if (line.text.trim() !== "") {
+      const t = timings[li];
+      if (t != null) time = Number(t.toFixed(2));
+      li++;
     }
-  }
-  // Initialise / complète le tableau à la bonne longueur.
-  while (timings.length < lineEls.length) timings.push(null);
+    return { text: line.text, curve: line.curve || "linear", time };
+  });
 }
 
-function saveTimings() {
-  localStorage.setItem(storageKey(), JSON.stringify(timings));
+/* Extrait les temps des seules lignes non vides (aligné sur lineEls/timings). */
+function timingsFromSong(song) {
+  return song
+    .filter((line) => line && typeof line.text === "string" && line.text.trim() !== "")
+    .map((line) => (typeof line.time === "number" ? line.time : null));
+}
+
+/* Sauvegarde automatique : permet de reprendre le travail après un reload,
+   sans avoir à réimporter. Le brouillon contient paroles ET temps. */
+function autoSaveDraft() {
+  localStorage.setItem(storageKey(), JSON.stringify(buildSong()));
+}
+
+/* Restaure le brouillon au démarrage. Renvoie true si une reprise a eu lieu. */
+function restoreDraft() {
+  const raw = localStorage.getItem(storageKey());
+  if (!raw) return false;
+  try {
+    const saved = JSON.parse(raw);
+    if (!Array.isArray(saved) || saved.length === 0) return false;
+    SONG = saved;
+    timings = timingsFromSong(SONG);
+    return true;
+  } catch {
+    return false; // brouillon illisible : on repart à vide
+  }
 }
 
 /* =========================================================================
@@ -289,6 +229,7 @@ function markLine() {
 
   lineEls[syncIndex].scrollIntoView({ behavior: "smooth", block: "center" });
   syncIndex++;
+  markDirty();
   updateHint();
 }
 
@@ -299,6 +240,7 @@ function undoLine() {
   lineEls[syncIndex].classList.remove("timed", "active");
   if (syncIndex > 0) lineEls[syncIndex - 1].classList.add("active");
   lineEls[syncIndex].scrollIntoView({ behavior: "smooth", block: "center" });
+  markDirty();
   updateHint();
 }
 
@@ -306,15 +248,22 @@ function resetTimings() {
   timings = lineEls.map(() => null);
   syncIndex = 0;
   lineEls.forEach((el) => el.classList.remove("timed", "active", "done"));
-  localStorage.removeItem(storageKey());
+  markDirty();
   updateHint();
+}
+
+/* Marque un calage modifié mais pas encore exporté, et le persiste pour
+   la reprise après reload. */
+function markDirty() {
+  hasUnsavedWork = true;
+  autoSaveDraft();
 }
 
 /* Exporte le minutage au format .lrc (standard des paroles synchronisées). */
 function exportLrc() {
   let lrc = "";
   let li = 0;
-  LYRICS.forEach((line) => {
+  SONG.forEach((line) => {
     if (line.text.trim() === "") {
       lrc += "\n";
       return;
@@ -333,49 +282,91 @@ function exportLrc() {
   downloadFile(lrc, "paroles.lrc", "text/plain");
 }
 
-/* Télécharge le minutage en .json (sauvegarde fidèle et réimportable).
-   On inclut les paroles pour pouvoir vérifier la cohérence à l'import. */
-function downloadTimings() {
-  const data = {
-    song: currentName,
-    lyrics: LYRICS,
-    timings: timings,
-  };
-  const name = currentName.replace(/\.[^.]+$/, "") + "-minutage.json";
-  downloadFile(JSON.stringify(data, null, 2), name, "application/json");
+/* En-tête du fichier song.js régénéré (identique à celui d'origine). */
+const SONG_FILE_HEADER = `/* =========================================================================
+   DONNÉES DE LA CHANSON
+   Chaque ligne est un objet : { text, curve, time }.
+     - text  : le texte affiché ("" = espace entre couplets, non minutable)
+     - curve : animation du remplissage de la couleur pendant le chant
+               ("linear", "easeIn", "easeOut", "easeInOut", "steps")
+     - time  : moment (en secondes) où la ligne commence ; null = non défini
+
+   Tu peux remplir les "time" à la main, OU les caler dans l'application
+   (mode Réglage) puis télécharger ce fichier mis à jour pour le remplacer.
+   ========================================================================= */
+`;
+
+/* Régénère le fichier song.js avec le minutage courant. C'est la seule
+   sauvegarde durable : on garde ce fichier pour le réimporter plus tard. */
+function downloadSong() {
+  if (SONG.length === 0) {
+    hintEl.textContent = "❌ Rien à exporter : importe d'abord un song.js.";
+    return;
+  }
+  // JSON.stringify gère l'échappement des guillemets/apostrophes du texte.
+  const lines = buildSong()
+    .map(
+      (line) =>
+        `  { text: ${JSON.stringify(line.text)}, curve: ${JSON.stringify(line.curve)}, time: ${line.time} },`
+    )
+    .join("\n");
+  const body = `const SONG = [\n${lines}\n];\n`;
+
+  downloadFile(SONG_FILE_HEADER + body, "song.js", "application/javascript");
+  hasUnsavedWork = false; // le travail est désormais figé dans le fichier exporté
+  hintEl.textContent = "✅ song.js exporté.";
 }
 
-/* Recharge un minutage depuis un fichier .json précédemment téléchargé. */
-function importTimings(file) {
+/* Extrait le tableau SONG du texte d'un fichier song.js.
+   On exécute le fichier dans une fonction isolée et on récupère SONG.
+   (Fichier choisi localement par l'utilisateur = même confiance que le projet.) */
+function parseSongFile(text) {
+  const factory = new Function(
+    text + "\n;return typeof SONG !== 'undefined' ? SONG : null;"
+  );
+  return factory();
+}
+
+/* Charge une chanson depuis un fichier song.js : paroles, courbes ET temps.
+   Le fichier fait foi (il remplace tout). Garde-fou si un calage non exporté
+   risquerait d'être écrasé. */
+function importSong(file) {
+  if (
+    hasUnsavedWork &&
+    !confirm(
+      "Tu as un calage non exporté. Importer un autre fichier l'écrasera.\n" +
+        "Exporte-le d'abord si tu veux le garder. Continuer quand même ?"
+    )
+  ) {
+    return; // l'utilisateur annule : on ne touche à rien
+  }
+
   const reader = new FileReader();
   reader.onload = () => {
     let parsed;
     try {
-      parsed = JSON.parse(reader.result);
+      parsed = parseSongFile(reader.result);
     } catch {
-      hintEl.textContent = "❌ Fichier illisible : ce n'est pas un .json valide.";
+      hintEl.textContent = "❌ Fichier illisible : ce n'est pas un song.js valide.";
       return;
     }
 
-    // Accepte soit { timings: [...] }, soit directement un tableau.
-    const incoming = Array.isArray(parsed) ? parsed : parsed.timings;
-    if (!Array.isArray(incoming)) {
-      hintEl.textContent = "❌ Aucun minutage trouvé dans ce fichier.";
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      hintEl.textContent = "❌ Aucun tableau SONG trouvé dans ce fichier.";
       return;
     }
 
-    if (incoming.length !== lineEls.length) {
-      hintEl.textContent =
-        `⚠️ Le fichier contient ${incoming.length} temps pour ${lineEls.length} lignes : ` +
-        "les paroles ont peut-être changé. Vérifie le résultat.";
-    } else {
-      hintEl.textContent = "✅ Minutage importé et sauvegardé.";
-    }
+    // Le fichier importé remplace paroles, courbes et temps.
+    SONG = parsed;
+    timings = timingsFromSong(SONG);
+    render();
 
-    // Aligne sur le nombre de lignes courant, puis sauvegarde.
-    timings = lineEls.map((_, i) => (incoming[i] != null ? incoming[i] : null));
-    saveTimings();
-    setMode(mode); // rafraîchit l'affichage avec le nouveau minutage
+    hasUnsavedWork = false; // l'affichage correspond exactement au fichier
+    autoSaveDraft(); // permet la reprise après un reload
+    setMode(mode);
+
+    hintEl.textContent =
+      "✅ song.js importé. Passe en « Réglage » pour caler ou ajuster les temps.";
   };
   reader.readAsText(file);
 }
@@ -435,17 +426,22 @@ function setMode(next) {
 }
 
 function updateHint() {
+  if (lineEls.length === 0) {
+    hintEl.textContent =
+      "Aucune chanson chargée. Clique « Importer song.js » (en haut) pour commencer.";
+    return;
+  }
   if (mode === "play") {
     const hasTimings = timings.some((t) => t != null);
     hintEl.textContent = hasTimings
       ? "Lance la musique : les paroles suivent toutes seules. Clique une ligne pour y sauter."
-      : "Aucun minutage trouvé. Passe en mode « Réglage » pour le créer.";
+      : "Aucun minutage. Passe en mode « Réglage » pour caler les temps.";
   } else {
     const remaining = lineEls.length - syncIndex;
     hintEl.textContent =
       `Réglage — ligne ${Math.min(syncIndex + 1, lineEls.length)}/${lineEls.length}. ` +
       `Lance la musique et appuie sur Espace au début de chaque ligne (${remaining} restantes). ` +
-      `N'oublie pas de Sauvegarder.`;
+      `N'oublie pas d'exporter song.js à la fin.`;
   }
 }
 
@@ -472,20 +468,15 @@ document.getElementById("mode-sync").addEventListener("click", () => setMode("sy
 
 document.getElementById("btn-tap").addEventListener("click", markLine);
 document.getElementById("btn-undo").addEventListener("click", undoLine);
-document.getElementById("btn-save").addEventListener("click", () => {
-  saveTimings();
-  hintEl.textContent =
-    "✅ Minutage sauvegardé. Repasse en mode « Karaoké » pour l'utiliser.";
-});
 document.getElementById("btn-export").addEventListener("click", exportLrc);
-document.getElementById("btn-download").addEventListener("click", downloadTimings);
+document.getElementById("btn-download").addEventListener("click", downloadSong);
 document.getElementById("import-file").addEventListener("change", (e) => {
   const file = e.target.files[0];
-  if (file) importTimings(file);
+  if (file) importSong(file);
   e.target.value = ""; // permet de réimporter le même fichier ensuite
 });
 document.getElementById("btn-reset").addEventListener("click", () => {
-  if (confirm("Effacer tout le minutage de cette chanson ?")) resetTimings();
+  if (confirm("Effacer tous les temps de la chanson en cours ?")) resetTimings();
 });
 
 // Raccourcis clavier :
@@ -508,21 +499,20 @@ document.addEventListener("keydown", (e) => {
 });
 
 // Chargement d'un autre fichier audio depuis l'ordinateur.
+// L'audio est indépendant des paroles : on ne touche ni à SONG ni aux temps.
 document.getElementById("audio-file").addEventListener("change", (e) => {
   const file = e.target.files[0];
   if (!file) return;
   audio.src = URL.createObjectURL(file);
-  currentName = file.name; // pour la clé de stockage
   audio.load();
-  // Recharge le minutage propre à ce fichier.
-  timings = [];
-  loadTimings();
-  setMode(mode);
 });
 
 /* =========================================================================
    INITIALISATION
    ========================================================================= */
+// Reprise auto : si un brouillon existe, on restaure paroles + temps.
+const restored = restoreDraft();
 render();
-loadTimings();
 setMode("play");
+// Un travail repris n'a pas (re)été exporté : on protège contre l'écrasement.
+hasUnsavedWork = restored;

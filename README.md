@@ -4,7 +4,7 @@ Un prompteur de chanson en HTML / CSS / JavaScript pur (aucune installation, auc
 
 ## Lancer l'application
 
-Double-cliquez sur **`index.html`** : il s'ouvre dans votre navigateur (Chrome conseillé). C'est tout.
+Double-cliquez sur **`index.html`** : il s'ouvre dans votre navigateur (Chrome conseillé). Au démarrage l'app est **vide** : commencez par **« ⬆️ Importer song.js »** (bouton en haut) pour charger une chanson.
 
 ## Fichiers du projet
 
@@ -12,8 +12,9 @@ Double-cliquez sur **`index.html`** : il s'ouvre dans votre navigateur (Chrome c
 |---------|------|
 | `index.html` | La page (structure) |
 | `style.css` | L'apparence (thème sombre, couleur de surlignage) |
-| `script.js` | La logique + **les paroles** (tout en haut du fichier) |
+| `script.js` | La logique de l'application |
 | `videoplayback.m4a` | La musique chargée par défaut |
+| `song.js` *(externe)* | Le fichier de données d'une chanson (paroles + courbes + temps). **Pas embarqué** dans le projet : on l'importe et on l'exporte. |
 
 ## Les deux modes
 
@@ -23,12 +24,12 @@ L'application a deux modes, sélectionnables avec les boutons en haut à gauche.
 
 C'est ici qu'on indique au programme **à quel moment commence chaque ligne**. Cette liste de temps s'appelle le *minutage*.
 
+0. Importez d'abord un `song.js` (bouton « ⬆️ Importer song.js » en haut).
 1. Cliquez sur **Réglage**.
 2. Lancez la musique (bouton ▶ du lecteur).
 3. Au **début de chaque ligne chantée**, appuyez sur la touche **`M`** (ou `Espace`, ou le bouton « ⏱️ Marquer la ligne »). Le temps de la ligne est enregistré et la ligne suivante devient à régler.
 4. Erreur ? **`↩️ Annuler la dernière`** revient en arrière. Vous pouvez aussi **cliquer sur une ligne** pour repositionner le curseur dessus.
-5. À la fin, cliquez sur **`💾 Sauvegarder le minutage`**.
-6. (Conseillé) Cliquez sur **`⬇️ Télécharger le minutage`** pour en garder une copie sur votre disque (voir « Sauvegarder et réutiliser le minutage » plus bas).
+5. À la fin, cliquez sur **`⬇️ Exporter song.js`** pour enregistrer votre travail (voir « Sauvegarder et réutiliser » plus bas). C'est la **seule** sauvegarde durable.
 
 > Le compteur dans la barre d'aide (« ligne 5/47 ») vous indique où vous en êtes. Sur les refrains très répétitifs, surveillez-le pour ne pas vous décaler.
 
@@ -41,39 +42,40 @@ C'est ici qu'on indique au programme **à quel moment commence chaque ligne**. C
 
 ## Changer les paroles
 
-Ouvrez **`script.js`** et modifiez le tableau **`LYRICS`** tout en haut. Chaque ligne est un objet `{ text, curve }` :
+Les paroles vivent dans un fichier **`song.js`** que vous éditez **hors de l'app**, puis que vous **importez**. C'est un tableau **`SONG`** : paroles, animation et minutage y vivent ensemble. Chaque ligne est un objet `{ text, curve, time }` :
 
 ```js
-const LYRICS = [
-  { text: "Première ligne de la chanson", curve: "linear" },
-  { text: "Deuxième ligne", curve: "linear" },
-  { text: "", curve: "linear" },              // text vide = espace entre deux couplets
-  { text: "Début du refrain", curve: "linear" },
+const SONG = [
+  { text: "Première ligne de la chanson", curve: "linear", time: null },
+  { text: "Deuxième ligne", curve: "linear", time: null },
+  { text: "", curve: "linear", time: null },              // text vide = espace entre deux couplets
+  { text: "Début du refrain", curve: "linear", time: null },
 ];
 ```
 
 - `text` = le texte affiché ; `text: ""` = un espacement (non minutable).
 - `curve` = l'animation de remplissage (voir section suivante ; laissez `"linear"` si vous ne savez pas).
+- `time` = le moment (en secondes) où la ligne commence ; `null` = non encore calé. Vous pouvez le remplir à la main, ou le caler en mode Réglage puis **exporter `song.js`** (voir plus bas).
 - Si le texte contient une apostrophe, entourez-le de guillemets doubles : `"c'est"`.
 
-> ⚠️ Si vous modifiez les paroles après avoir fait le réglage, le minutage peut se décaler : refaites un passage en mode Réglage.
+Pour créer une nouvelle chanson, partez d'un `song.js` existant, remplacez les `text`, mettez les `time` à `null`, importez-le, puis calez les temps.
+
+> ⚠️ Si vous changez les paroles, recalez les temps : importez le `song.js` modifié et refaites un passage en mode Réglage.
 
 ## Changer la musique
 
 - **Solution rapide** : remplacez le fichier `videoplayback.m4a` par le vôtre (en gardant le même nom).
-- **Solution souple** : utilisez le bouton **« Charger un audio »** en haut à droite pour choisir un fichier depuis votre ordinateur. Chaque chanson garde son propre minutage.
+- **Solution souple** : utilisez le bouton **« Charger un audio »** en haut à droite pour choisir un fichier depuis votre ordinateur. L'audio est indépendant des paroles.
 
-## Sauvegarder et réutiliser le minutage
+## Sauvegarder et réutiliser
 
-Par défaut, le minutage est gardé dans le navigateur (`localStorage`), **par chanson** : il revient tout seul à la prochaine ouverture, mais **uniquement sur le même navigateur et le même ordinateur**. Pour ne pas le perdre (changement de PC, vidage du cache), utilisez les boutons du mode Réglage :
+La **seule sauvegarde durable** est le fichier **`song.js` exporté** : gardez-le, c'est lui que vous réimporterez. Pendant que vous travaillez, l'app sauvegarde aussi un **brouillon automatique** dans le navigateur : si vous rechargez la page, votre travail est **restauré tout seul** (même navigateur / même ordinateur uniquement). Ce brouillon est **écrasé dès que vous importez un nouveau fichier** — le fichier importé fait foi.
 
 | Bouton | Effet |
 |--------|-------|
-| **⬇️ Télécharger le minutage** | Enregistre un fichier `.json` (chanson + paroles + temps) sur votre disque. C'est votre sauvegarde. |
-| **⬆️ Importer un minutage** | Recharge un fichier `.json` précédemment téléchargé (sur n'importe quel ordinateur). Le minutage est aussitôt appliqué et re-sauvegardé dans le navigateur. |
-| **⬇️ Exporter (.lrc)** | Exporte au format standard `.lrc` (paroles synchronisées), pour réutiliser ailleurs. ⚠️ Ce format n'est **pas** réimportable ici. |
-
-> Si vous importez un minutage alors que les paroles ont changé (nombre de lignes différent), un message d'avertissement s'affiche et vous demande de vérifier le résultat.
+| **⬆️ Importer song.js** | Charge une chanson (paroles + courbes + temps) depuis un fichier `song.js`. Remplace tout l'affichage. Si un calage non exporté risque d'être perdu, une confirmation s'affiche. |
+| **⬇️ Exporter song.js** | Régénère le fichier `song.js` avec le minutage courant. C'est votre sauvegarde : conservez-le pour le réimporter plus tard. |
+| **⬇️ Exporter (.lrc)** | Exporte au format standard `.lrc` (paroles synchronisées), pour réutiliser dans **un autre logiciel**. ⚠️ Ce format n'est **pas** réimportable ici. |
 
 ## Animation de remplissage par ligne (optionnel)
 
