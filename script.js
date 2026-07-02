@@ -27,6 +27,7 @@ const syncTools = document.getElementById("sync-tools");
 
 let SONG = []; // paroles courantes ; rempli uniquement à l'import
 let mode = "play"; // "play" | "sync"
+let fillStyle = "dynamic"; // "dynamic" = remplissage progressif ; "static" = ligne entière colorée d'un coup
 let lineEls = []; // éléments <p> de chaque ligne (paroles non vides incluses)
 let lineCurves = []; // courbe d'animation de chaque ligne (aligné sur lineEls)
 let timings = []; // timings[i] = temps en secondes de la ligne i, ou null
@@ -192,11 +193,14 @@ function renderPlayback() {
   // Remplissage progressif (0% → 100%) de la ligne active,
   // déformé par la courbe d'animation choisie pour cette ligne.
   if (current >= 0) {
-    const start = timings[current];
-    const end = lineEndTime(current);
-    const ratio = end > start ? (audio.currentTime - start) / (end - start) : 1;
-    const p = Math.max(0, Math.min(1, ratio));
-    const fill = applyEasing(p, lineCurves[current]) * 100;
+    let fill = 100; // mode statique : la ligne entière est colorée jusqu'au point suivant
+    if (fillStyle === "dynamic") {
+      const start = timings[current];
+      const end = lineEndTime(current);
+      const ratio = end > start ? (audio.currentTime - start) / (end - start) : 1;
+      const p = Math.max(0, Math.min(1, ratio));
+      fill = applyEasing(p, lineCurves[current]) * 100;
+    }
     lineEls[current].style.setProperty("--fill", fill.toFixed(2) + "%");
   }
 }
@@ -393,6 +397,16 @@ function setMode(next) {
   updateHint();
 }
 
+/* Bascule le style de remplissage de la ligne active en mode Karaoké :
+   "dynamic" = la couleur avance avec le temps ; "static" = ligne entière colorée. */
+function setFillStyle(next) {
+  fillStyle = next;
+  document.getElementById("fill-toggle").textContent =
+    next === "dynamic" ? "🎨 Remplissage progressif" : "🎨 Remplissage complet";
+  // Rafraîchit immédiatement l'affichage même à l'arrêt.
+  if (mode === "play") renderPlayback();
+}
+
 function updateHint() {
   if (lineEls.length === 0) {
     hintEl.textContent =
@@ -433,6 +447,10 @@ audio.addEventListener("seeked", () => {
 
 document.getElementById("mode-play").addEventListener("click", () => setMode("play"));
 document.getElementById("mode-sync").addEventListener("click", () => setMode("sync"));
+
+document.getElementById("fill-toggle").addEventListener("click", () => {
+  setFillStyle(fillStyle === "dynamic" ? "static" : "dynamic");
+});
 
 document.getElementById("btn-tap").addEventListener("click", markLine);
 document.getElementById("btn-undo").addEventListener("click", undoLine);
